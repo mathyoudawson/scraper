@@ -10,8 +10,9 @@ class Scraper
   end
 
   def call
+    request = {}
+    request.merge!(get_metadata)
     output = []
-    output << get_metadata
     @page.css('.grid-lg-1-3').each do |body| 
       body.css('h2').each do |category| 
         obj = {}
@@ -30,8 +31,8 @@ class Scraper
         output << obj
       end
     end
-    byebug
-    output
+    request[:payload] = output
+    request
   end
 
   def get_metadata
