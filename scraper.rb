@@ -12,27 +12,43 @@ class Scraper
   def call
     request = {}
     request.merge!(get_metadata)
+    request[:payload] = extract_output_from_page
+    request
+  end
+
+  private
+
+  def extract_output_from_page
     output = []
     @page.css('.grid-lg-1-3').each do |body| 
       body.css('h2').each do |category| 
         obj = {}
-        command_list = []
-        body.css('ul').each do |list| 
-          cmd_list = []
-          list.css('li').each do |content|
-            cmd_item = {}
-            cmd_item[:term] = content.css('kbd').children.text
-            cmd_item[:description] = content.children.text
-            command_list << cmd_item
-          end
-        end
+        term_list = extract_commands_from_lists(body)
         obj[:category] = category.children.text
-        obj[:commands] = command_list
+        obj[:commands] = term_list
         output << obj
       end
     end
-    request[:payload] = output
-    request
+    output
+  end
+
+  def extract_commands_from_lists(body)
+    term_list = []
+    body.css('ul').css('li').each do |content| 
+      term_list << extract_term(content)
+    end
+    term_list
+  end
+
+  def extract_term(content)
+    {
+      :term => content.css('kbd').children.text,
+      :description => content.children.text
+    }
+  end
+
+  def extract_term_list
+
   end
 
   def get_metadata
